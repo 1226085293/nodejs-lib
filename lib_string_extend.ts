@@ -3,26 +3,24 @@ import path from "path";
 class lib_string_extend {
 	/** 获取字符块 */
 	get_block(label_s_: string, head_s_ = "{", tail_s_ = "}"): string[] {
-		/**返回数据 */
-		let result_ss: string[] = [];
-		/**前缀下标 */
+		/** 返回数据 */
+		const result_ss: string[] = [];
+		/** 前缀下标 */
 		let head_index_n = 0;
-		/**后缀下标 */
+		/** 后缀下标 */
 		let tail_index_n = 0;
-		/**下一个前缀下标 */
+		/** 下一个前缀下标 */
 		let next_head_index_n = 0;
-		/**前缀计数 */
+		/** 前缀计数 */
 		let head_count_n: number;
-		/**查找起始位置 */
+		/** 查找起始位置 */
 		let find_index_n: number;
+
 		while (head_index_n !== -1 && tail_index_n !== -1) {
 			if (tail_index_n) {
 				result_ss.push(label_s_.slice(head_index_n + head_s_.length, tail_index_n));
 			}
-			head_index_n = label_s_.indexOf(
-				head_s_,
-				tail_index_n + (tail_index_n ? tail_s_.length : 0)
-			);
+			head_index_n = label_s_.indexOf(head_s_, tail_index_n + (tail_index_n ? tail_s_.length : 0));
 			head_count_n = head_index_n !== -1 ? 1 : 0;
 			find_index_n = head_index_n + head_s_.length;
 			while (head_count_n > 0) {
@@ -33,16 +31,10 @@ class lib_string_extend {
 				}
 				// 更新前缀计数
 				{
-					if (
-						(next_head_index_n !== -1 && next_head_index_n < tail_index_n) ||
-						(tail_index_n === -1 && next_head_index_n !== -1)
-					) {
+					if ((next_head_index_n !== -1 && next_head_index_n < tail_index_n) || (tail_index_n === -1 && next_head_index_n !== -1)) {
 						++head_count_n;
 						find_index_n = next_head_index_n + head_s_.length;
-					} else if (
-						(tail_index_n !== -1 && tail_index_n < next_head_index_n) ||
-						(tail_index_n !== -1 && next_head_index_n === -1)
-					) {
+					} else if ((tail_index_n !== -1 && tail_index_n < next_head_index_n) || (tail_index_n !== -1 && next_head_index_n === -1)) {
 						--head_count_n;
 						find_index_n = tail_index_n + tail_s_.length;
 					}

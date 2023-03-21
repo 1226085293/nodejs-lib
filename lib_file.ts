@@ -7,10 +7,11 @@ import lib_string_extend from "./lib_string_extend";
 class lib_file {
 	private _log = new lib_log("lib_file");
 	/* ------------------------------- 功能 ------------------------------- */
-	/**保证目录存在 */
+	/** 保证目录存在 */
 	private _ensure_path_exists(path_s_: string): void {
-		let path_ss = path.resolve(path_s_).split(path.sep);
+		const path_ss = path.resolve(path_s_).split(path.sep);
 		let curr_path_s = "";
+
 		path_ss.forEach((v_s) => {
 			curr_path_s += v_s + path.sep;
 			if (!fs.existsSync(curr_path_s)) {
@@ -19,13 +20,8 @@ class lib_file {
 		});
 	}
 
-	/**搜索文件/目录 */
-	private _search(
-		path_s_: string,
-		match_: RegExp,
-		config_: lib_file_.search_config,
-		result_ss_: string[]
-	): string[] {
+	/** 搜索文件/目录 */
+	private _search(path_s_: string, match_: RegExp, config_: lib_file_.search_config, result_ss_: string[]): string[] {
 		if (!fs.existsSync(path_s_)) {
 			return result_ss_;
 		}
@@ -57,15 +53,16 @@ class lib_file {
 		return result_ss_;
 	}
 
-	/**删除文件/目录 */
+	/** 删除文件/目录 */
 	private _del(path_s_: string, config_: lib_file_.del_config): void {
 		// 如果是排除目录和不存在的目录则退出
 		if (config_.exclude_ss!.includes(path_s_) || !fs.existsSync(path_s_)) {
 			return;
 		}
 		if (fs.statSync(path_s_).isDirectory()) {
-			/**当前路径 */
+			/** 当前路径 */
 			let curr_path_s: string;
+
 			// 遍历文件夹
 			fs.readdirSync(path_s_).forEach((v_s) => {
 				curr_path_s = path.resolve(path_s_, v_s);
@@ -80,14 +77,15 @@ class lib_file {
 		}
 	}
 
-	/**搜索文件/目录 */
+	/** 搜索文件/目录 */
 	search(root_s_: string, match_: RegExp, config_ = new lib_file_.search_config()): string[] {
-		let config = new lib_file_.search_config(config_);
+		const config = new lib_file_.search_config(config_);
+
 		config.exclude_ss = config.exclude_ss!.map((v_s) => path.resolve(v_s));
 		return this._search(path.resolve(root_s_), match_, config, []);
 	}
 
-	/**拷贝文件/目录 */
+	/** 拷贝文件/目录 */
 	copy(input_s_: string, output_s_: string): void {
 		// 安检
 		if (!fs.existsSync(input_s_)) {
@@ -101,7 +99,8 @@ class lib_file {
 				this.copy(path.resolve(input_s_, v_s), path.resolve(output_s_, v_s));
 			});
 		} else {
-			let output_dir_s = output_s_.slice(0, output_s_.lastIndexOf(path.sep));
+			const output_dir_s = output_s_.slice(0, output_s_.lastIndexOf(path.sep));
+
 			if (!fs.existsSync(output_dir_s)) {
 				this._ensure_path_exists(output_dir_s);
 			}
@@ -109,16 +108,18 @@ class lib_file {
 		}
 	}
 
-	/**删除文件/目录 */
+	/** 删除文件/目录 */
 	del(path_s_: string, config_ = new lib_file_.del_config()): void {
-		let config = new lib_file_.del_config(config_);
+		const config = new lib_file_.del_config(config_);
+
 		config.exclude_ss = config.exclude_ss!.map((v_s) => path.resolve(v_s));
 		return this._del(path.resolve(path_s_), config);
 	}
 
-	/**添加文件/目录 */
+	/** 添加文件/目录 */
 	add(path_s_: string, content_s_: string): Promise<NodeJS.ErrnoException | null> {
-		let path_s = path.normalize(path_s_);
+		const path_s = path.normalize(path_s_);
+
 		this._ensure_path_exists(path.dirname(path_s));
 		return new Promise<NodeJS.ErrnoException | null>((resolve_f) => {
 			fs.writeFile(path_s, content_s_, (err) => {
@@ -130,11 +131,7 @@ class lib_file {
 					return;
 				}
 				// 刷新文件
-				Editor.Message.send(
-					"asset-db",
-					"refresh-asset",
-					lib_string_extend.fs_path_to_db_path(path_s)
-				);
+				Editor.Message.send("asset-db", "refresh-asset", lib_string_extend.fs_path_to_db_path(path_s));
 			});
 		});
 	}
@@ -152,8 +149,9 @@ class lib_file {
 		// 准备参数
 		let temp_s = "./";
 		let temp_n: number, temp2_n: number;
-		let temp_ss = export_s_.split("/");
-		let temp2_ss = current_s.split("/");
+		const temp_ss = export_s_.split("/");
+		const temp2_ss = current_s.split("/");
+
 		// 路径转换
 		for (temp2_n = 0; temp2_n < temp_ss.length; ++temp2_n) {
 			if (temp_ss[temp2_n] != temp2_ss[temp2_n]) {
@@ -171,7 +169,7 @@ class lib_file {
 	}
 }
 
-export module lib_file_ {
+export namespace lib_file_ {
 	export enum file_type {
 		dir = 0x01,
 		file = 0x02,
@@ -180,16 +178,18 @@ export module lib_file_ {
 		constructor(init_?: search_config) {
 			Object.assign(this, init_);
 		}
-		/**搜索类型 */
+
+		/** 搜索类型 */
 		type_n? = lib_file_.file_type.dir | lib_file_.file_type.file;
-		/**排除路径 */
+		/** 排除路径 */
 		exclude_ss?: string[] = [];
 	}
 	export class del_config {
 		constructor(init_?: del_config) {
 			Object.assign(this, init_);
 		}
-		/**排除路径 */
+
+		/** 排除路径 */
 		exclude_ss?: string[] = [];
 	}
 }

@@ -3,6 +3,7 @@ class lib_log {
 		this._name_s = name_s_;
 		this._head_s = this._name_s;
 	}
+
 	/** 打印名 */
 	private _name_s: string;
 	/** 打印头 */

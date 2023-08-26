@@ -11,7 +11,7 @@ class lib_css_extend {
 					return;
 				}
 			}
-			console.log("css", v.url_s);
+
 			v.parent.appendChild.call(v.parent, css);
 		});
 	}

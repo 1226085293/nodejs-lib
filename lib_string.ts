@@ -1,8 +1,8 @@
 import path from "path";
 
-class lib_string_extend {
+class lib_string {
 	/** 获取字符块 */
-	get_block(label_s_: string, head_s_ = "{", tail_s_ = "}"): string[] {
+	get_block(label_s_: string, { head_s_ = "{", tail_s_ = "}" }): string[] {
 		/** 返回数据 */
 		const result_ss: string[] = [];
 		/** 前缀下标 */
@@ -20,6 +20,7 @@ class lib_string_extend {
 			if (tail_index_n) {
 				result_ss.push(label_s_.slice(head_index_n + head_s_.length, tail_index_n));
 			}
+
 			head_index_n = label_s_.indexOf(head_s_, tail_index_n + (tail_index_n ? tail_s_.length : 0));
 			head_count_n = head_index_n !== -1 ? 1 : 0;
 			find_index_n = head_index_n + head_s_.length;
@@ -29,6 +30,7 @@ class lib_string_extend {
 				if (next_head_index_n === -1 && tail_index_n === -1) {
 					break;
 				}
+
 				// 更新前缀计数
 				{
 					if ((next_head_index_n !== -1 && next_head_index_n < tail_index_n) || (tail_index_n === -1 && next_head_index_n !== -1)) {
@@ -40,10 +42,12 @@ class lib_string_extend {
 					}
 				}
 			}
+
 			if (head_count_n) {
 				return result_ss;
 			}
 		}
+
 		return result_ss;
 	}
 
@@ -52,6 +56,7 @@ class lib_string_extend {
 		if (path_s_.length <= "project://".length) {
 			return "";
 		}
+
 		return path.normalize(path_s_.replace("project:/", Editor.Project.path));
 	}
 
@@ -65,6 +70,7 @@ class lib_string_extend {
 		if (path_s_.length <= "db://".length) {
 			return "";
 		}
+
 		return path.normalize(path_s_.replace("db:/", Editor.Project.path));
 	}
 
@@ -74,4 +80,4 @@ class lib_string_extend {
 	}
 }
 
-export default new lib_string_extend();
+export default new lib_string();

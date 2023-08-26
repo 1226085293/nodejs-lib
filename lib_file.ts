@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import lib_byte from "./lib_byte";
 import lib_log from "./lib_log";
-import lib_string_extend from "./lib_string_extend";
+import lib_string from "./lib_string";
 
 class lib_file {
 	private _log = new lib_log("lib_file");
@@ -21,35 +21,44 @@ class lib_file {
 	}
 
 	/** 搜索文件/目录 */
-	private _search(path_s_: string, match_: RegExp, config_: lib_file_.search_config, result_ss_: string[]): string[] {
+	private _search(path_s_: string, match_: RegExp, config_: lib_file_.search_config, result_ss_: string[], layer_n_ = 0): string[] {
 		if (!fs.existsSync(path_s_)) {
 			return result_ss_;
 		}
+
 		if (fs.statSync(path_s_).isDirectory()) {
 			// 排除路径
 			if (config_.exclude_ss!.includes(path_s_)) {
 				return result_ss_;
 			}
+
 			// 匹配规则
 			if (lib_byte.get_bit(config_.type_n!, lib_file_.file_type.dir)) {
 				if (path_s_.match(match_)) {
 					result_ss_.push(path_s_);
 				}
 			}
+
+			if (!config_.recursive_b && layer_n_ !== 0) {
+				return result_ss_;
+			}
+
 			// 遍历文件夹
 			fs.readdirSync(path_s_).forEach((v_s) => {
-				this._search(path.resolve(path_s_, v_s), match_, config_, result_ss_);
+				this._search(path.resolve(path_s_, v_s), match_, config_, result_ss_, layer_n_ + 1);
 			});
 		} else if (lib_byte.get_bit(config_.type_n!, lib_file_.file_type.file)) {
 			// 排除路径
 			if (config_.exclude_ss!.includes(path_s_)) {
 				return result_ss_;
 			}
+
 			// 匹配规则
 			if (path_s_.match(match_)) {
 				result_ss_.push(path_s_);
 			}
 		}
+
 		return result_ss_;
 	}
 
@@ -59,6 +68,7 @@ class lib_file {
 		if (config_.exclude_ss!.includes(path_s_) || !fs.existsSync(path_s_)) {
 			return;
 		}
+
 		if (fs.statSync(path_s_).isDirectory()) {
 			/** 当前路径 */
 			let curr_path_s: string;
@@ -68,6 +78,7 @@ class lib_file {
 				curr_path_s = path.resolve(path_s_, v_s);
 				this._del(curr_path_s, config_);
 			});
+
 			// 删除空文件夹
 			if (!config_.exclude_ss!.filter((v_s) => v_s.startsWith(path_s_)).length) {
 				fs.rmdirSync(path_s_);
@@ -82,6 +93,7 @@ class lib_file {
 		const config = new lib_file_.search_config(config_);
 
 		config.exclude_ss = config.exclude_ss!.map((v_s) => path.resolve(v_s));
+
 		return this._search(path.resolve(root_s_), match_, config, []);
 	}
 
@@ -91,10 +103,12 @@ class lib_file {
 		if (!fs.existsSync(input_s_)) {
 			return;
 		}
+
 		if (fs.statSync(input_s_).isDirectory()) {
 			if (!fs.existsSync(output_s_)) {
 				this._ensure_path_exists(output_s_);
 			}
+
 			fs.readdirSync(input_s_).forEach((v_s) => {
 				this.copy(path.resolve(input_s_, v_s), path.resolve(output_s_, v_s));
 			});
@@ -104,6 +118,7 @@ class lib_file {
 			if (!fs.existsSync(output_dir_s)) {
 				this._ensure_path_exists(output_dir_s);
 			}
+
 			fs.copyFileSync(input_s_, output_s_);
 		}
 	}
@@ -113,6 +128,7 @@ class lib_file {
 		const config = new lib_file_.del_config(config_);
 
 		config.exclude_ss = config.exclude_ss!.map((v_s) => path.resolve(v_s));
+
 		return this._del(path.resolve(path_s_), config);
 	}
 
@@ -121,17 +137,20 @@ class lib_file {
 		const path_s = path.normalize(path_s_);
 
 		this._ensure_path_exists(path.dirname(path_s));
+
 		return new Promise<NodeJS.ErrnoException | null>((resolve_f) => {
 			fs.writeFile(path_s, content_s_, (err) => {
 				resolve_f(err);
 				if (err) {
 					return;
 				}
+
 				if (!path_s.startsWith(Editor.Project.path)) {
 					return;
 				}
+
 				// 刷新文件
-				Editor.Message.send("asset-db", "refresh-asset", lib_string_extend.fs_path_to_db_path(path_s));
+				Editor.Message.send("asset-db", "refresh-asset", lib_string.fs_path_to_db_path(path_s));
 			});
 		});
 	}
@@ -158,13 +177,17 @@ class lib_file {
 				break;
 			}
 		}
+
 		for (temp_n = temp2_n + 1; temp_n < temp2_ss.length; ++temp_n) {
 			temp_s += "../";
 		}
+
 		for (temp_n = temp2_n; temp_n < temp_ss.length; ++temp_n) {
 			temp_s += `${temp_ss[temp_n]}/`;
 		}
+
 		temp_s = temp_s.slice(0, temp_s.length - 1);
+
 		return temp_s;
 	}
 }
@@ -183,6 +206,8 @@ export namespace lib_file_ {
 		type_n? = lib_file_.file_type.dir | lib_file_.file_type.file;
 		/** 排除路径 */
 		exclude_ss?: string[] = [];
+		/** 递归 */
+		recursive_b? = true;
 	}
 	export class del_config {
 		constructor(init_?: del_config) {

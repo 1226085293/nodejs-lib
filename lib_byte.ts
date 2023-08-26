@@ -23,6 +23,7 @@ class lib_byte {
 			count_n++;
 			v_n_ |= v_n_ + 1;
 		}
+
 		return count_n;
 	}
 
@@ -34,6 +35,7 @@ class lib_byte {
 			count_n++;
 			v_n_ &= v_n_ - 1;
 		}
+
 		return count_n;
 	}
 }

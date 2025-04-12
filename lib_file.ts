@@ -113,10 +113,12 @@ class lib_file {
 				this.copy(path.resolve(input_s_, v_s), path.resolve(output_s_, v_s));
 			});
 		} else {
-			const output_dir_s = output_s_.slice(0, output_s_.lastIndexOf(path.sep));
+			if (output_s_.includes(path.sep)) {
+				const output_dir_s = output_s_.slice(0, output_s_.lastIndexOf(path.sep));
 
-			if (!fs.existsSync(output_dir_s)) {
-				this._ensure_path_exists(output_dir_s);
+				if (!fs.existsSync(output_dir_s)) {
+					this._ensure_path_exists(output_dir_s);
+				}
 			}
 
 			fs.copyFileSync(input_s_, output_s_);
